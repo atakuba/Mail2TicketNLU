@@ -38,8 +38,9 @@ Given the email content below, extract and generate the following:
    - Any relevant steps taken (e.g., if they met over Zoom, mention it)
    - How the issue was resolved
 3. A professional and easy-to-read tone throughout.
-4. A clear **Description** of the issue.
-5. A concise **Short Description** summarizing the issue in 1–2 lines.
+4. A clear **Description** of the issue (do not mention issue was resolved).
+5. A very concise **Short Description** of the description in 1 very short sentence (do not mention issue was resolved).
+6. The **User Name** and **User email** if available in the email content (it cannot be ata kubanychbek).
 
 Format your response like this:
 
@@ -47,6 +48,8 @@ Subject: ...
 Summary: ...
 Description: ...
 Short Description: ...
+User Name: ...
+User email: ...
 
 Email content:
 {body_text}
