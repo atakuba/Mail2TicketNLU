@@ -4,5 +4,5 @@ Feature: Create Ticket
     Given the automation is started and browser is open
     When the tech user logs in manually
     And the user navigates to the favorites page
-    And clicks on "new" button
-    Then enters all the input information and clicks on submit button
+    Given the Excel file is loaded into context
+    Then each record from the Excel file is submitted as a new ticket

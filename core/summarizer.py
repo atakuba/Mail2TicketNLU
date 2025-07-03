@@ -39,7 +39,7 @@ Given the email content below, extract and generate the following:
    - How it was resolved (mention if the user confirmed resolution)
 3. A clear **Description** of the issue (DO NOT mention resolution).
 4. A very concise **Short Description** summarizing the issue in 10–12 words (NO resolution details).
-5. The **User Name** and **User Email** of the person who received help (must NOT be Ata Kubanychbek).
+5. The **User Email** of the person who received help (try to get @nl.edu or @my.nl.edu emails if possible).
 6. The correct **Business Service (BS)** and **Category** based on this list:
 
 Choose the closest match based on context:
@@ -70,8 +70,6 @@ Subject: ...
 Summary: ...
 Description: ...
 Short Description: ...
-User Name: ...
-User Email: ...
 Business Service: ...
 Category: ...
 
@@ -95,7 +93,6 @@ Email content:
     summary = re.search(r"Summary:\s*(.*?)(?:\n[A-Z][a-z]+|$)", content, re.DOTALL)
     description = re.search(r"Description:\s*(.*?)(?:\n[A-Z][a-z]+|$)", content, re.DOTALL)
     short_desc = re.search(r"Short Description:\s*(.*)", content)
-    user_name = re.search(r"User Name:\s*(.*)", content)
     user_email = re.search(r"User Email:\s*(.*)", content)
     business_service = re.search(r"Business Service:\s*(.*)", content)
     category = re.search(r"Category:\s*(.*)", content)
@@ -105,22 +102,13 @@ Email content:
     summary = summary.group(1).strip() if summary else "Summary not available."
     description = description.group(1).strip() if description else "Description not available."
     short_description = short_desc.group(1).strip() if short_desc else "Short description not available."
-    user_name_text = user_name.group(1).strip() if user_name else ""
     user_email_text = user_email.group(1).strip() if user_email else ""
     business_service = business_service.group(1).strip() if business_service else "Not available"
     category = category.group(1).strip() if category else "Not available"
 
-    # Split name
-    first_name = last_name = ""
-    if user_name_text:
-        name_parts = user_name_text.split()
-        if len(name_parts) >= 2:
-            first_name = name_parts[0]
-            last_name = " ".join(name_parts[1:])
-        elif len(name_parts) == 1:
-            first_name = name_parts[0]
+   
 
-    return subject, summary, description, short_description, first_name, last_name, user_email_text, business_service, category
+    return subject, summary, description, short_description, user_email_text, business_service, category
 
 def process_emails(input_csv_path):
     df = pd.read_csv(input_csv_path)
@@ -130,26 +118,26 @@ def process_emails(input_csv_path):
         body = row['Body']
 
         # Get all fields from AI
-        subject_generated, body_summary, description, short_description, first_name, last_name, user_email, bs, category = ai_generate_subject_and_summary(body)
+        subject_generated, body_summary, description, short_description, user_email, bs, category = ai_generate_subject_and_summary(body)
 
         # Extract date and time
-        datetime_obj = extract_date_time_flexible(body)
-        date_str = datetime_obj.strftime('%Y-%m-%d') if datetime_obj else ""
-        time_str = datetime_obj.strftime('%H:%M') if datetime_obj else ""
+        # datetime_obj = extract_date_time_flexible(body)
+        # date_str = datetime_obj.strftime('%Y-%m-%d') if datetime_obj else ""
+        # time_str = datetime_obj.strftime('%H:%M') if datetime_obj else ""
 
         updated_data.append({
             "subject": subject_generated,
             "body": body_summary,
             "description": description,
             "short_description": short_description,
-            "user_first_name": first_name,
-            "user_last_name": last_name,
+            # "user_first_name": first_name,
+            # "user_last_name": last_name,
             "user_email": user_email,
             "business_service": bs,
             "category": category,
-            "to": "akubanychbek",
-            "date": date_str,
-            "time": time_str
+            # "to": "akubanychbek",
+            # "date": date_str,
+            # "time": time_str
         })
 
     final_df = pd.DataFrame(updated_data)
@@ -158,14 +146,14 @@ def process_emails(input_csv_path):
         "body": "Body Summary",
         "description": "Description",
         "short_description": "Short Description",
-        "user_first_name": "User First Name",
-        "user_last_name": "User Last Name",
+        # "user_first_name": "User First Name",
+        # "user_last_name": "User Last Name",
         "user_email": "User Email",
         "business_service": "Business Service",
         "category": "Category",
-        "to": "To",
-        "date": "Date",
-        "time": "Time"
+        # "to": "To",
+        # "date": "Date",
+        # "time": "Time"
     }, inplace=True)
 
     return final_df

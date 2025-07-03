@@ -5,6 +5,9 @@ from pages.create_ticket_page_locators import CreateTicketPageLocators
 from automation.utils.driver_setup import get_driver
 from selenium.common.exceptions import TimeoutException
 import time
+from pathlib import Path
+import pandas as pd
+import os
 
 
 @given("the automation is started and browser is open")
@@ -21,10 +24,18 @@ def step_wait_for_manual_login(context):
     except TimeoutException:
         raise Exception("❌ 'Favorites' button not found after manual login. Login may not be completed.")
     
+@given("the Excel file is loaded into context")
+def step_load_excel_file(context):
+    excel_folder = Path("excels")
+    latest_file = max(excel_folder.glob("summarized_output_*.xlsx"), key=os.path.getmtime)
+
+    print(f"📂 Loading latest file: {latest_file}")
+    df = pd.read_excel(latest_file)
+    context.df = df
+    context.record_index = 0
     
 @when("the user navigates to the favorites page")
 def step_navigate_to_favorites(context):
-    print("*********** Navigating to Favorites ***********")
 
     time.sleep(7) # Wait for 5 minutes to allow manual review if needed
     # Get the actual WebElement from Shadow DOM
@@ -35,46 +46,91 @@ def step_navigate_to_favorites(context):
     else:
         raise Exception("❌ Could not find Favorites button to click.")
 
-    WebDriverWait(context.driver, 10).until(
+    WebDriverWait(context.driver, 20).until(
         EC.element_to_be_clickable(CreateTicketPageLocators.get_case_my_cases_item(context))
     ).click()
+    time.sleep(3)
 
+@then("each record from the Excel file is submitted as a new ticket")
+def step_submit_each_ticket(context):
+    while context.record_index < len(context.df):
+        row = context.df.iloc[context.record_index]
+        context.record_index += 1
 
-@when("clicks on \"new\" button")
-def step_click_new_button(context):
+        print(f"🚀 Processing ticket {context.record_index} of {len(context.df)}")
 
-    time.sleep(3) # Wait for 5 minutes to allow manual review if needed
-    print("*********** Clicking on New Button ***********")
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context)
-    time.sleep(20)
+        # Click New button
+        CreateTicketPageLocators.page_reset_focus(context)
+        CreateTicketPageLocators.click_on_tab(context)
+        CreateTicketPageLocators.click_on_enter_key(context)
+        time.sleep(2)
 
-@then("enters all the input information and clicks on submit button")
-def step_fill_form_and_submit(context):
-    # time.sleep(300) # Wait for 5 minutes to allow manual review if needed
-    d = context.driver
+        # Get fields from the Excel row
+        assigned_to = row.get("User Email", "akubanychbek@nl.edu")
+        assignment_group = "National-Louis - Desktop Services"
+        business_service = row.get("Business Service", "Help Desk")
+        category = row.get("Category", "General Inquiry")
+        short_description = row.get("short_description", "Missing short desc")
+        description = row.get("description", "Missing description")
+        resolution_notes = row.get("Body Summary", "Auto-generated resolution notes")
+        state = "Solved - Fixed by Support/Guidance provided"
 
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context, tab_count=2, delay=0.1).send_keys("John Doe")
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context, tab_count=4, delay=0.1).send_keys("312-555-7890")
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context, tab_count=5, delay=0.1).send_keys("National-Louis - Desktop Services")
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context, tab_count=7, delay=0.1).send_keys("Cannot access student portal")
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context, tab_count=9, delay=0.1).send_keys("Cannot access student portal")
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context, tab_count=16, delay=0.1).send_keys("Help Desk")
-    CreateTicketPageLocators.reset_focus_to_start_and_tab(context, tab_count=2, delay=0.1).send_keys("User reported login issue with portal. Issue resolved after password reset")
-    # d.find_element(*CreateTicketPageLocators.CONTACT_INPUT_XPATH).
-    # d.find_element(*CreateTicketPageLocators.BEST_CONTACT_NUMBER_INPUT).send_keys("312-555-7890")
-    # d.find_element(*CreateTicketPageLocators.LOCATION_INPUT).send_keys("Chicago Office")
-    # d.find_element(*CreateTicketPageLocators.ASSIGNMENT_GROUP_INPUT).send_keys("National-Louis - Desktop Services")
-    # d.find_element(*CreateTicketPageLocators.SHORT_DESCRIPTION_INPUT).send_keys("Cannot access student portal")
-    # d.find_element(*CreateTicketPageLocators.DESCRIPTION_TEXTAREA).send_keys("User reported login issue with portal. Issue resolved after password reset.")
-    # d.find_element(*CreateTicketPageLocators.STATE_SELECT).click()
-    # d.find_element(*CreateTicketPageLocators.STATE_OPTION_SOLUTION_PROPOSED).click()
-    # d.find_element(*CreateTicketPageLocators.BUSINESS_SERVICE_INPUT).send_keys("Help Desk")
-    # d.find_element(*CreateTicketPageLocators.CATEGORY_SELECT).click()
-    # d.find_element(*CreateTicketPageLocators.CATEGORY_OPTION_DYNAMIC("Drop Call")).click()
+        # Fill ticket form using tab and key navigation
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_tab(context, tab_count=2, delay=0.5).send_keys(assigned_to)
+        time.sleep(2)
+        CreateTicketPageLocators.click_on_enter_key(context)
+        time.sleep(1)
 
-    # d.find_element(*CreateTicketPageLocators.RESOLUTION_INFORMATION_TAB).click()
-    # d.find_element(*CreateTicketPageLocators.RESOLUTION_CODE_SELECT).click()
-    # d.find_element(*CreateTicketPageLocators.RESOLUTION_CODE_OPTION_FIXED_BY_SUPPORT).click()
-    # d.find_element(*CreateTicketPageLocators.CLOSE_NOTES_TEXTAREA).send_keys("Issue resolved by resetting password. User confirmed success.")
-    time.sleep(300) # Wait for 5 minutes to allow manual review if needed
-    # d.find_element(*FavoritesPage.SUBMIT_BUTTON).click()
+        CreateTicketPageLocators.click_on_tab(context, tab_count=2, delay=0.5).send_keys("N/A")  # This is user's best contact number
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_tab(context, tab_count=2, delay=0.5).send_keys("Gage")
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_tab(context, tab_count=2, delay=0.5).send_keys(assignment_group)
+        time.sleep(1)
+
+        CreateTicketPageLocators.click_on_tab(context, tab_count=5, delay=0.5)
+        time.sleep(1)
+        CreateTicketPageLocators.click_arrow_button(context, "down", 1)
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_key(context, "s")
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_enter_key(context)
+        time.sleep(1)
+
+        CreateTicketPageLocators.click_on_tab(context, tab_count=2, delay=0.1).send_keys(business_service)
+        time.sleep(2)
+        CreateTicketPageLocators.click_on_enter_key(context)
+        time.sleep(1)
+
+        CreateTicketPageLocators.click_on_tab(context, tab_count=1, delay=0.1).send_keys(category)
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_tab(context, tab_count=9, delay=0.1).send_keys(short_description)
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_tab(context, tab_count=1, delay=0.1).send_keys(description)
+        time.sleep(1)
+
+        CreateTicketPageLocators.click_on_tab(context, tab_count=1, delay=0.1)
+        time.sleep(5)
+        CreateTicketPageLocators.click_on_enter_key(context)
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_tab(context, tab_count=1, delay=0.1)
+        time.sleep(1)
+        CreateTicketPageLocators.click_arrow_button(context, "right", 1)
+        time.sleep(1)
+
+        CreateTicketPageLocators.click_on_tab(context, tab_count=4, delay=0.1).send_keys(state)
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_enter_key(context)
+        time.sleep(1)
+
+        CreateTicketPageLocators.click_on_tab(context, tab_count=5, delay=0.1).send_keys(resolution_notes)
+        time.sleep(1)
+        CreateTicketPageLocators.click_on_tab(context, tab_count=1, delay=0.1)
+        time.sleep(1)
+
+        # Submit the form
+        # CreateTicketPageLocators.click_on_enter_key(context)
+
+        print(f"✅ Ticket {context.record_index} submitted.")
+        time.sleep(4000)

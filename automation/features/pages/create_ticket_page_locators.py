@@ -46,10 +46,8 @@ class CreateTicketPageLocators:
             raise Exception("❌ 'Case - My Cases' item not found in Shadow DOM within timeout.")
 
     @staticmethod
-    def reset_focus_to_start_and_tab(context, tab_count=24, delay=0.1):
+    def page_reset_focus(context):
         driver = context.driver
-
-        # Refresh and wait
         driver.refresh()
         time.sleep(3)
         driver.execute_script("""
@@ -58,10 +56,47 @@ class CreateTicketPageLocators:
             if (tabbables.length > 0) tabbables[0].focus();
         """)
 
+    @staticmethod
+    def click_on_key(context, key: str):
+        driver = context.driver
+        ActionChains(driver).send_keys(key).perform()
 
-        # Blur current focus if needed
-        # driver.execute_script("if (document.activeElement) document.activeElement.blur();")
-        # time.sleep(0.5)
+    @staticmethod
+    def click_on_enter_key(context):
+        driver = context.driver
+        ActionChains(driver).send_keys(Keys.ENTER).perform()
+
+    @staticmethod
+    def click_arrow_button(context, direction: str, arrow_count: int):
+        driver = context.driver
+        actions = ActionChains(driver)
+        # active = driver.switch_to.active_element
+        # active.click()
+        # time.sleep(20.2)
+
+        # try:
+        #     active_element = driver.switch_to.active_element
+        #     active_element.click()
+        #     time.sleep(0.2)
+        # except Exception as e:
+        #     print(f"⚠️ Could not click active element: {e}")
+
+        for _ in range(arrow_count):
+            time.sleep(1.1)
+            if direction.lower() == "down":
+                actions.send_keys(Keys.ARROW_DOWN).perform()
+            elif direction.lower() == "up":
+                actions.send_keys(Keys.UP).perform()
+            elif direction.lower() == "right":
+                actions.send_keys(Keys.RIGHT).perform()
+            elif direction.lower() == "left":
+                actions.send_keys(Keys.LEFT).perform()
+            else:
+                raise ValueError(f"Invalid direction: {direction}. Use 'up', 'down', 'right' or 'left'!")
+            
+    @staticmethod
+    def click_on_tab(context, tab_count=24, delay=0.1):
+        driver = context.driver
 
         ActionChains(driver).send_keys(Keys.TAB).perform()
         time.sleep(0.2)
@@ -71,31 +106,4 @@ class CreateTicketPageLocators:
             ActionChains(driver).send_keys(Keys.TAB).perform()
             print("🔄 TABBED")
             time.sleep(delay)
-
-
-        time.sleep(4)  # Wait a bit before sending ENTER
-        # driver.execute_script("document.activeElement.click();")
-        ActionChains(driver).send_keys(Keys.ENTER).perform()
-
-        print(f"✅ Focus reset. TABBED {tab_count} times + ENTER.")
-
-
-
-    CONTACT_INPUT_XPATH = (By.XPATH, "//input[contains(@name, 'sn_customerservice_case.contact')]")
-    BEST_CONTACT_NUMBER_INPUT = (By.XPATH, "//input[@id='sn_customerservice_case.u_best_contact_number']")
-    LOCATION_INPUT = (By.XPATH, "//input[@id='sys_display.sn_customerservice_case.location']")
-    ASSIGNMENT_GROUP_INPUT = (By.XPATH, "//input[@id='sys_display.sn_customerservice_case.assignment_group']")
-    SHORT_DESCRIPTION_INPUT = (By.XPATH, "//input[@id='sn_customerservice_case.short_description']")
-    DESCRIPTION_TEXTAREA = (By.XPATH, "//textarea[@id='sn_customerservice_case.description']")
-    STATE_SELECT = (By.XPATH, "//select[@id='sn_customerservice_case.state']")
-    STATE_OPTION_SOLUTION_PROPOSED = (By.XPATH, "//select[@id='sn_customerservice_case.state']/option[@value='6']")
-    BUSINESS_SERVICE_INPUT = (By.XPATH, "//input[@id='sys_display.sn_customerservice_case.u_business_service']")
-    CATEGORY_SELECT = (By.XPATH, "//select[@id='sn_customerservice_case.category']")
-    CATEGORY_OPTION_DYNAMIC = lambda value: (By.XPATH, f"//select[@id='sn_customerservice_case.category']/option[@value='{value}']")
-
-    RESOLUTION_INFORMATION_TAB = (By.XPATH, "//span[@class='tab_caption_text' and normalize-space(text())='Resolution Information']")
-    RESOLUTION_CODE_SELECT = (By.XPATH, "//select[@id='sn_customerservice_case.resolution_code']")
-    RESOLUTION_CODE_OPTION_FIXED_BY_SUPPORT = (By.XPATH, "//select[@id='sn_customerservice_case.resolution_code']/option[@value='1']")
-    CLOSE_NOTES_TEXTAREA = (By.XPATH, "//textarea[@id='sn_customerservice_case.close_notes']")
-    SUBMIT_BUTTON = (By.XPATH, "//button[@id='sysverb_insert_bottom']")
-
+        return driver.switch_to.active_element
