@@ -64,10 +64,7 @@ Virtualenv (optional)
 ChromeDriver (auto-downloaded by script)
 
 📦 Installation
-bash
-Copy
-Edit
-git clone https://github.com/Issakunov/Mail2TicketNLU.git
+git clone https://github.com/atakuba/Mail2TicketNLU.git
 cd Mail2TicketNLU
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -75,22 +72,13 @@ pip install -r requirements.txt
 🔑 Environment Setup
 Create a .env file at the root with the following:
 
-env
-Copy
-Edit
 OPENAI_API_KEY=your-openai-key
 ▶️ Start the UI
-bash
-Copy
-Edit
 cd ui
 streamlit run app.py
 🧪 Run Automation
 Once emails are processed and Excel is generated:
 
-bash
-Copy
-Edit
 cd automation
 behave features/
 You will be prompted to log in manually once per session.
@@ -99,14 +87,8 @@ You will be prompted to log in manually once per session.
 
 Demo video coming soon!
 
-👤 Tech Users
-UI will prompt you to select your name from a list of authorized tech users.
-
 Update the list in:
 
-python
-Copy
-Edit
 utils/tech_list.py
 📧 Processed Fields in Output
 subject, body, description, short_description
@@ -125,13 +107,9 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 📫 Contact
 Created by Atabek Kubanychbek uulu
-Email: issakunov@gmail.com
+Email: atakubanychbek@gmail.com
 LinkedIn: linkedin.com/in/atakuba
 
 📄 License
 MIT License
-
-yaml
-Copy
-Edit
 
